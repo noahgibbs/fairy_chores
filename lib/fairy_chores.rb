@@ -2,5 +2,10 @@ require "fairy_chores/version"
 
 module FairyChores
   class Error < StandardError; end
-  # Your code goes here...
+
+  class Circle
+    def initialize(howmany)
+      @howmany = howmany
+    end
+  end
 end

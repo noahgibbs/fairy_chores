@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+
+require "fairy_chores"
+require "readline"
+
+# https://ruby-doc.org/stdlib-2.5.1/libdoc/readline/rdoc/Readline.html
+
+PROMPT = "> "
+
+how_many = 0
+loop do
+  puts "Number of fairies? (Default: 6)"
+  input = Readline.readline(PROMPT, false)
+  how_many = input.to_i
+  break if how_many > 0 && how_many < 40
+  puts "Nope. That number (#{how_many.inspect} / #{input.inspect}) doesn't work for me."
+end
+
+CIRCLE = FairyChores::Circle.new(how_many)
