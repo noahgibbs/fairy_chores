@@ -16,12 +16,11 @@ loop do
   puts "Nope. That number (#{how_many.inspect} / #{input.inspect}) doesn't work for me."
 end
 
-circle = FairyChores.make_circle how_many_fairies: how_many, fairy_strategy: :ignored, rules: :ignored
+circle = FairyChores.make_circle how_many_fairies: how_many, game_type: :ignored
 
 loop do
   print "=====\nRound #{circle.round_num.inspect}:\n"
   if circle.finished?
-    print "This game is finished and all the fairies go back to their play or chores.\n\n\n"
     break
   end
 
@@ -33,13 +32,14 @@ end
 fairies = circle.fairies
 stats = {
   fairies: {
+    num: fairies.size,
     doing_chores: fairies.select(&:doing_chores).size,
     can_assign_chores: fairies.select(&:can_assign_chores).size,
   },
   winner: circle.winner,
 }
 print <<SUMMARY
-The game is over.
+This game is finished and all #{stats[:fairies][:num].inspect} fairies go back to their play or chores.
 
 #{stats[:fairies][:doing_chores]} fairies are now hard at work on chores.
 #{stats[:fairies][:can_assign_chores]} fairies could tell other fairies to get to work.

@@ -9,9 +9,16 @@ module FairyChores
   #
   # Now that I think of it, strategy, rules and how_many_fairies are quite
   # interdependent. Hrm.
-  def self.make_circle(how_many_fairies:, fairy_strategy:, rules:)
-    # Future: pick a Circle subclass according to rules
-    FairyChores::Circle.new fairies: make_fairies(how_many: how_many_fairies, strategy: fairy_strategy)
+  def self.make_circle(how_many_fairies:, game_type:)
+    # Future: pick a Circle subclass according to game_type
+    FairyChores::Circle.new how_many: how_many_fairies
+  end
+
+  class GameType
+    def make_circle(how_many_fairies:)
+        FairyChores::Circle.new make_fairies(how_many_fairies: how_many_fairies)
+    end
+
   end
 
   class Circle
@@ -19,10 +26,10 @@ module FairyChores
     attr_reader :how_many
     attr_reader :fairies
 
-    def initialize(fairies:)
-      @how_many = fairies.size
-      @fairies = fairies
+    def initialize(how_many:)
+      @how_many = how_many
       @round_num = 1
+      make_fairies
     end
 
     def finished?
@@ -34,19 +41,19 @@ module FairyChores
     def winner
       :none
     end
-  end
 
-  def self.make_fairies(how_many:, strategy:)
-    fairies = []
-    how_many.times do |i|
-      fairies << make_fairy(which: i, role: :ignored)
+    protected
+
+    def make_fairies
+      @fairies = []
+      @how_many.times do |i|
+        @fairies << make_fairy({ which: i, role: :ignored })
+      end
     end
-    fairies
-  end
 
-  def self.make_fairy(which:, role:)
-    # Future: choose Fairy class by role
-    FairyChores::Fairy.new which: which
+    def make_fairy(info)
+      FairyChores::Fairy.new which: info[:which]
+    end
   end
 
   class Fairy
