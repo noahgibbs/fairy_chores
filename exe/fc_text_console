@@ -11,9 +11,38 @@ how_many = 0
 loop do
   puts "Number of fairies? (Default: 6)"
   input = Readline.readline(PROMPT, false)
-  how_many = input.to_i
+  how_many = (input == "") ? 6 : input.to_i
   break if how_many > 0 && how_many < 40
   puts "Nope. That number (#{how_many.inspect} / #{input.inspect}) doesn't work for me."
 end
 
-CIRCLE = FairyChores::Circle.new(how_many)
+circle = FairyChores.make_circle how_many_fairies: how_many, fairy_strategy: :ignored, rules: :ignored
+
+loop do
+  print "=====\nRound #{circle.round_num.inspect}:\n"
+  if circle.finished?
+    print "This game is finished and all the fairies go back to their play or chores.\n\n\n"
+    break
+  end
+
+  print "  #{circle.how_many} little fairies, playing in a circle...\n"
+
+
+end
+
+fairies = circle.fairies
+stats = {
+  fairies: {
+    doing_chores: fairies.select(&:doing_chores).size,
+    can_assign_chores: fairies.select(&:can_assign_chores).size,
+  },
+  winner: circle.winner,
+}
+print <<SUMMARY
+The game is over.
+
+#{stats[:fairies][:doing_chores]} fairies are now hard at work on chores.
+#{stats[:fairies][:can_assign_chores]} fairies could tell other fairies to get to work.
+
+The winner was: #{stats[:winner]}.
+SUMMARY
