@@ -16,7 +16,7 @@ loop do
   puts "Nope. That number (#{how_many.inspect} / #{input.inspect}) doesn't work for me."
 end
 
-circle = FairyChores.make_circle how_many_fairies: how_many, game_type: :ignored
+circle = FairyChores.make_circle how_many_fairies: how_many, game_type: :nothing_happens
 
 loop do
   print "=====\nRound #{circle.round_num.inspect}:\n"

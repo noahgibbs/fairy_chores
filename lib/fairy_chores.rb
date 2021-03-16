@@ -3,22 +3,32 @@ require "fairy_chores/version"
 module FairyChores
   class Error < StandardError; end
 
-  # how_many_fairies is how many total fairies to make (all roles combined.)
-  # fairy_strategy is the method of selecting fairy roles.
-  # rules is the rules of the game.
-  #
-  # Now that I think of it, strategy, rules and how_many_fairies are quite
-  # interdependent. Hrm.
-  def self.make_circle(how_many_fairies:, game_type:)
-    # Future: pick a Circle subclass according to game_type
-    FairyChores::Circle.new how_many: how_many_fairies
+  @fairy_types = {}
+
+  def self.add_fairy_type(sym, klass)
+    @fairy_types[sym] = klass
   end
 
-  class GameType
-    def make_circle(how_many_fairies:)
-        FairyChores::Circle.new make_fairies(how_many_fairies: how_many_fairies)
-    end
+  def self.get_fairy_type(sym)
+    @fairy_types[sym]
+  end
 
+  @game_types = {}
+
+  def self.add_game_type(sym, klass)
+    @game_types[sym] = klass
+  end
+
+  def self.get_game_type(sym)
+    @game_types[sym]
+  end
+
+  # game_type is the type of game
+  def self.make_circle(how_many_fairies:, game_type:)
+    klass = get_game_type(game_type)
+    raise "Unknown game type #{this_game_type.inspect}!" unless klass
+    # Future: pick a Circle subclass according to game_type
+    klass.new how_many: how_many_fairies
   end
 
   class Circle
@@ -47,21 +57,25 @@ module FairyChores
     def make_fairies
       @fairies = []
       @how_many.times do |i|
-        @fairies << make_fairy({ which: i, role: :ignored })
+        @fairies << make_fairy({ which: i, role: :fairy })
       end
     end
 
     def make_fairy(info)
-      FairyChores::Fairy.new which: info[:which]
+      klass = FairyChores.get_fairy_type(info[:role])
+      raise "Unknown fairy role: #{info[:role].inspect}!" unless klass
+      klass.new info
     end
   end
+
+  add_game_type(:nothing_happens, Circle)
 
   class Fairy
     attr_reader :index # Which one is this?
     attr_reader :doing_chores
 
-    def initialize(which:)
-      @index = which
+    def initialize(info)
+      @index = info[:which]
       @doing_chores = false
     end
 
@@ -73,4 +87,6 @@ module FairyChores
       false
     end
   end
+
+  add_fairy_type(:fairy, Fairy)
 end
