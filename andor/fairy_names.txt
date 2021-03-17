@@ -1,0 +1,9 @@
+ns1_start: blub | grib | bron | blurgle (0.2) | smik | nik | sig | morg | pim | flib
+ns1_end: kriggle | gurnik | smillik | ver | gir | krillik | krik | smiggle
+nonsense1: :ns1_start + :ns1_end
+ns2_end: inchie | inky | pinky | stinky | uffer | ipfer | immie | gorie | bie
+nonsense2: :ns1_start + :ns2_end
+flower_name: daisy | tulip | rose | hyacinth | chrysanthemum | bogbane | nosewort | snapdragon | daffodil | heather | gorseblossom
+gemcolour: sapphire | topaz | onyx | opal | emerald | ruby
+colour: blue | red | orange | :gemcolour (3) | yellow | green | cerulean (0.2) | viridian (0.2) | cerise (0.2) | magenta (0.2) | ochre (0.2)
+start: :flower_name | :colour + " " + :flower_name | :colour + " " + :nonsense1 | :colour + " " + :nonsense2 | :nonsense1 + " " + :nonsense2

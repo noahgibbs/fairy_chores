@@ -1,4 +1,5 @@
 require "fairy_chores/version"
+require "andor"
 
 module FairyChores
   class Error < StandardError; end
@@ -26,6 +27,8 @@ module FairyChores
   def self.all_game_types
     @game_types.keys
   end
+
+  NAMEGEN = File.read File.join(__dir__, "..", "andor", "fairy_names.txt")
 
   # game_type is the type of game
   def self.make_circle(how_many_fairies:, game_type:)
@@ -105,6 +108,7 @@ module FairyChores
   add_game_type(:nothing_happens, Circle)
 
   class Fairy
+    attr_reader :name
     attr_reader :which
     attr_reader :doing_chores
     attr_reader :circle
@@ -113,6 +117,7 @@ module FairyChores
       @which = info[:which]
       @doing_chores = false
       @circle = info[:circle]
+      @name = info[:name] || generate_random_name
     end
 
     def assign_to_chores(assigned_by:)
@@ -125,6 +130,32 @@ module FairyChores
 
     def next_action
       @doing_chores ? [:chores] : [:frolic]
+    end
+
+    def andor_generator
+      return @andor_generator if @andor_generator
+      @andor_generator = Andor::NameGenerator.new
+      @andor_generator.load_rules_from_andor_string FairyChores::NAMEGEN
+      if @andor_generator.names.include?("start")
+        @andor_start_token = "start"
+      else
+        @andor_start_token = @andor_generator.names.first
+      end
+      @andor_generator
+    end
+
+    def generate_random_name
+      circle_names = @circle.fairies.map(&:name)
+      gen = andor_generator
+      20.times do
+        n = gen.generate_from_name @andor_start_token
+        unless circle_names.include?(n)
+          #STDERR.puts "New generated name: #{n.inspect}"
+          return n
+        end
+        #STDERR.puts "  (duplicate, re-generate: #{n.inspect})"
+      end
+      raise "After 20 tries, couldn't get a name that wasn't already used!"
     end
   end
   add_fairy_type(:fairy, Fairy)
@@ -172,25 +203,27 @@ module FairyChores
 
       none_fairies = fairies_by_action[:none]
       if none_fairies
-        desc.concat "#{indent_spaces}#{none_fairies.size} fairies are doing nothing (#{none_fairies.map {|f| f.which }.join(", ")}.)\n"
+        desc.concat "#{indent_spaces}#{none_fairies.size} fairies are doing nothing (#{none_fairies.map {|f| f.name }.join(", ")}.)\n"
       end
       frolic_fairies = fairies_by_action[:frolic]
       if frolic_fairies
-        desc.concat "#{indent_spaces}#{frolic_fairies.size} fairies are frolicking happily (#{frolic_fairies.map {|f| f.which }.join(", ")}.)\n"
+        desc.concat "#{indent_spaces}#{frolic_fairies.size} fairies are frolicking happily (#{frolic_fairies.map {|f| f.name }.join(", ")}.)\n"
       end
       chores_fairies = fairies_by_action[:chores]
       if chores_fairies
-        desc.concat "#{indent_spaces}#{chores_fairies.size} fairies sadly do their chores (#{chores_fairies.map {|f| f.which }.join(", ")}.)\n"
+        desc.concat "#{indent_spaces}#{chores_fairies.size} fairies sadly do their chores (#{chores_fairies.map {|f| f.name }.join(", ")}.)\n"
       end
 
       assign_fairies = fairies_by_action[:assign]
       assign_fairies.each do |f|
-        desc.concat "#{indent_spaces}#{f.which} is assigning chores to #{@actions[f.which][1]}\n"
+        target_fairy = @circle.get_fairy @actions[f.which][1]
+        desc.concat "#{indent_spaces}#{f.name} is assigning chores to #{target_fairy.name}\n"
       end
 
       desc
     end
   end
+
 end
 
 require "fairy_chores/simple_games"
