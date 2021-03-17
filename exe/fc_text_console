@@ -7,6 +7,18 @@ require "readline"
 
 PROMPT = "> "
 
+game_type = nil
+loop do
+  puts "Game type? Choices: nothing_happens assigners_win"
+  input = Readline.readline(PROMPT, false)
+  unless FairyChores.get_game_type(input.to_sym)
+    print "Don't recognise #{input.inspect} as a game type... Try again.\n"
+    next
+  end
+  game_type = input.to_sym
+  break
+end
+
 how_many = 0
 loop do
   puts "Number of fairies? (Default: 6)"
@@ -16,7 +28,7 @@ loop do
   puts "Nope. That number (#{how_many.inspect} / #{input.inspect}) doesn't work for me."
 end
 
-circle = FairyChores.make_circle how_many_fairies: how_many, game_type: :nothing_happens
+circle = FairyChores.make_circle how_many_fairies: how_many, game_type: game_type
 
 loop do
   print "=====\nRound #{circle.round_num.inspect}:\n"
