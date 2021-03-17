@@ -36,6 +36,7 @@ loop do
 end
 
 circle = FairyChores.make_circle how_many_fairies: how_many, game_type: game_type
+rounds = []
 
 loop do
   print "=====\nRound #{circle.round_num.inspect}:\n"
@@ -44,8 +45,11 @@ loop do
   end
 
   print "  #{circle.how_many} little fairies, playing in a circle...\n"
+  this_round = circle.calculate_round
+  rounds << this_round
+  circle.apply_round(this_round)
 
-
+  print this_round.text_description(indent: 2)
 end
 
 fairies = circle.fairies

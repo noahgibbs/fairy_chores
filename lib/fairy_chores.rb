@@ -47,13 +47,44 @@ module FairyChores
     end
 
     def finished?
-      return true if @fairies.all?(:doing_chores)
-      return true if @fairies.none?(:can_assign_chores)
-      false
+      winner != :none
     end
 
     def winner
+      return :assigners if @fairies.all? { |f| f.doing_chores || f.can_assign_chores }
+      return :frolickers if @fairies.none? { |f| f.can_assign_chores } && @fairies.any? { |f| !f.doing_chores }
       :none
+    end
+
+    def allowed_actions
+      [ :frolic, :chores, :assign, :none ]
+    end
+
+    def get_fairy(which)
+      @fairies[which]
+    end
+
+    def calculate_round
+      round = Round.new(circle: self)
+
+      fairy_actions = @fairies.map do |fairy|
+        act = fairy.next_action
+        raise "Got an illegal action (#{act.inspect})!" unless allowed_actions.include?(act[0])
+        round.add_action fairy, act
+      end
+
+      round
+    end
+
+    def apply_round(round)
+      round.actions.each do |which, act|
+        fairy = get_fairy(which)
+        if act[0] == :assign
+          target_fairy = get_fairy(act[1])
+          target_fairy.assign_to_chores(assigned_by: fairy)
+        end
+      end
+      @round_num += 1
     end
 
     protected
@@ -61,7 +92,7 @@ module FairyChores
     def make_fairies
       @fairies = []
       @how_many.times do |i|
-        @fairies << make_fairy({ which: i, role: :fairy })
+        @fairies << make_fairy({ which: i, role: :fairy, circle: self })
       end
     end
 
@@ -74,20 +105,26 @@ module FairyChores
   add_game_type(:nothing_happens, Circle)
 
   class Fairy
-    attr_reader :index # Which one is this?
+    attr_reader :which
     attr_reader :doing_chores
+    attr_reader :circle
 
     def initialize(info)
-      @index = info[:which]
+      @which = info[:which]
       @doing_chores = false
+      @circle = info[:circle]
     end
 
-    def assign_to_chores
+    def assign_to_chores(assigned_by:)
       @doing_chores = true
     end
 
     def can_assign_chores
       false
+    end
+
+    def next_action
+      @doing_chores ? [:chores] : [:frolic]
     end
   end
   add_fairy_type(:fairy, Fairy)
@@ -100,8 +137,60 @@ module FairyChores
     def can_assign_chores
       true
     end
+
+    def next_action
+      target = @circle.fairies.select { |f| !f.doing_chores && !f.can_assign_chores }.sample
+      [ :assign, target.which ]
+    end
   end
   add_fairy_type(:assigner, ChoreAssignerFairy)
+
+  class Round
+    attr_reader :circle
+    attr_reader :actions
+
+    def initialize(circle:)
+      @circle = circle
+      @actions = {}
+    end
+
+    def add_action(fairy, action)
+      raise "This round already has an action for this fairy! (#{fairy.which})" if @actions[fairy.which]
+
+      @actions[fairy.which] = action
+    end
+
+    def text_description(indent: 0)
+      indent_spaces = " " * indent
+      desc = ""
+
+      fairies_by_action = {}
+      @actions.each do |which, act|
+        fairies_by_action[act[0]] ||= []
+        fairies_by_action[act[0]] << @circle.get_fairy(which)
+      end
+
+      none_fairies = fairies_by_action[:none]
+      if none_fairies
+        desc.concat "#{indent_spaces}#{none_fairies.size} fairies are doing nothing (#{none_fairies.map {|f| f.which }.join(", ")}.)\n"
+      end
+      frolic_fairies = fairies_by_action[:frolic]
+      if frolic_fairies
+        desc.concat "#{indent_spaces}#{frolic_fairies.size} fairies are frolicking happily (#{frolic_fairies.map {|f| f.which }.join(", ")}.)\n"
+      end
+      chores_fairies = fairies_by_action[:chores]
+      if chores_fairies
+        desc.concat "#{indent_spaces}#{chores_fairies.size} fairies sadly do their chores (#{chores_fairies.map {|f| f.which }.join(", ")}.)\n"
+      end
+
+      assign_fairies = fairies_by_action[:assign]
+      assign_fairies.each do |f|
+        desc.concat "#{indent_spaces}#{f.which} is assigning chores to #{@actions[f.which][1]}\n"
+      end
+
+      desc
+    end
+  end
 end
 
 require "fairy_chores/simple_games"
