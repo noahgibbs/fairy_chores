@@ -6,16 +6,23 @@ require "readline"
 # https://ruby-doc.org/stdlib-2.5.1/libdoc/readline/rdoc/Readline.html
 
 PROMPT = "> "
+IS_NUMBER = /^\d+$/
 
 game_type = nil
 loop do
-  puts "Game type? Choices: nothing_happens assigners_win"
+  print "Game type?\n"
+  print FairyChores.all_game_types.map.with_index { |gt, i| "  #{i + 1}. #{gt}\n"}.join
+  print "\n"
   input = Readline.readline(PROMPT, false)
-  unless FairyChores.get_game_type(input.to_sym)
+  unless input =~ IS_NUMBER || FairyChores.get_game_type(input.to_sym)
     print "Don't recognise #{input.inspect} as a game type... Try again.\n"
     next
   end
-  game_type = input.to_sym
+  if input =~ IS_NUMBER
+    game_type = FairyChores.all_game_types[input.to_i - 1]
+  else
+    game_type = input.to_sym
+  end
   break
 end
 

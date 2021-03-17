@@ -23,10 +23,14 @@ module FairyChores
     @game_types[sym]
   end
 
+  def self.all_game_types
+    @game_types.keys
+  end
+
   # game_type is the type of game
   def self.make_circle(how_many_fairies:, game_type:)
     klass = get_game_type(game_type)
-    raise "Unknown game type #{this_game_type.inspect}!" unless klass
+    raise "Unknown game type #{game_type.inspect}!" unless klass
     # Future: pick a Circle subclass according to game_type
     klass.new how_many: how_many_fairies
   end
