@@ -73,16 +73,6 @@ module FairyChores
   end
   add_game_type(:nothing_happens, Circle)
 
-  class AssignersJustWinCircle < Circle
-    def make_fairies
-      raise "Not enough fairies for game type!" unless @how_many > 2
-      @fairies = ([ :assigner, :assigner ] +  [ :fairy ] * (@how_many - 2)).map.with_index { |t, i| make_fairy({ which: i, role: t }) }
-    end
-
-    # Define finished? and winner
-  end
-  add_game_type(:assigners_win, AssignersJustWinCircle)
-
   class Fairy
     attr_reader :index # Which one is this?
     attr_reader :doing_chores
@@ -113,3 +103,5 @@ module FairyChores
   end
   add_fairy_type(:assigner, ChoreAssignerFairy)
 end
+
+require "fairy_chores/simple_games"
