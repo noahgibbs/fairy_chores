@@ -90,7 +90,33 @@ module FairyChores
       @round_num += 1
     end
 
+    def generate_random_name
+      circle_names = @fairies.map(&:name)
+      gen = andor_generator
+      20.times do
+        n = gen.generate_from_name @andor_start_token
+        unless circle_names.include?(n)
+          STDERR.puts "New generated name: #{n.inspect}"
+          return n
+        end
+        STDERR.puts "  (duplicate, re-generate: #{n.inspect})"
+      end
+      raise "After 20 tries, couldn't get a name that wasn't already used!"
+    end
+
     protected
+
+    def andor_generator
+      return @andor_generator if @andor_generator
+      @andor_generator = Andor::NameGenerator.new
+      @andor_generator.load_rules_from_andor_string FairyChores::NAMEGEN
+      if @andor_generator.names.include?("start")
+        @andor_start_token = "start"
+      else
+        @andor_start_token = @andor_generator.names.first
+      end
+      @andor_generator
+    end
 
     def make_fairies
       @fairies = []
@@ -117,7 +143,7 @@ module FairyChores
       @which = info[:which]
       @doing_chores = false
       @circle = info[:circle]
-      @name = info[:name] || generate_random_name
+      @name = info[:name] || @circle.generate_random_name
     end
 
     def assign_to_chores(assigned_by:)
@@ -130,32 +156,6 @@ module FairyChores
 
     def next_action
       @doing_chores ? [:chores] : [:frolic]
-    end
-
-    def andor_generator
-      return @andor_generator if @andor_generator
-      @andor_generator = Andor::NameGenerator.new
-      @andor_generator.load_rules_from_andor_string FairyChores::NAMEGEN
-      if @andor_generator.names.include?("start")
-        @andor_start_token = "start"
-      else
-        @andor_start_token = @andor_generator.names.first
-      end
-      @andor_generator
-    end
-
-    def generate_random_name
-      circle_names = @circle.fairies.map(&:name)
-      gen = andor_generator
-      20.times do
-        n = gen.generate_from_name @andor_start_token
-        unless circle_names.include?(n)
-          #STDERR.puts "New generated name: #{n.inspect}"
-          return n
-        end
-        #STDERR.puts "  (duplicate, re-generate: #{n.inspect})"
-      end
-      raise "After 20 tries, couldn't get a name that wasn't already used!"
     end
   end
   add_fairy_type(:fairy, Fairy)
