@@ -1,9 +1,14 @@
-ns1_start: blub | grib | bron | blurgle (0.2) | smik | nik | sig | morg | pim | flib
+ns1_start: Blub | Grib | Bron | Blurgle (0.2) | Smik | Nik | Sig | Morg | Pim | Flib | Au
 ns1_end: kriggle | gurnik | smillik | ver | gir | krillik | krik | smiggle
 nonsense1: :ns1_start + :ns1_end
-ns2_end: inchie | inky | pinky | stinky | uffer | ipfer | immie | gorie | bie
+ns1_or_not: "" | :nonsense1 + " " (0.3)
+ns2_end: inchie | inky | pinky | stinky | uffer | ipfer | immie | gorie | bie | bumpie | orrie | orgip | ia | ae
 nonsense2: :ns1_start + :ns2_end
-flower_name: daisy | tulip | rose | hyacinth | chrysanthemum | bogbane | nosewort | snapdragon | daffodil | heather | gorseblossom
-gemcolour: sapphire | topaz | onyx | opal | emerald | ruby
-colour: blue | red | orange | :gemcolour (3) | yellow | green | cerulean (0.2) | viridian (0.2) | cerise (0.2) | magenta (0.2) | ochre (0.2)
-start: :flower_name | :colour + " " + :flower_name | :colour + " " + :nonsense1 | :colour + " " + :nonsense2 | :nonsense1 + " " + :nonsense2
+flower_name: Daisy | Tulip | Rose | Hyacinth | Chrysanthemum | Bogbane | Nosewort | Snapdragon | Daffodil | Heather | Gorseblossom | Henbane | Catnip | Mugwort
+ns2_or_flower: :nonsense2 | :flower_name(2)
+gemcolour: Sapphire | Topaz | Onyx | Opal | Emerald | Ruby
+colour: Blue | Red | Orange | :gemcolour (3) | Yellow | Green | Cerulean (0.2) | Viridian (0.2) | Cerise (0.2) | Magenta (0.2) | Ochre (0.2)
+colour_or_not: "" | :colour + " " (0.5)
+title: Lord | Saint (0.1) | King (0.5) | Queen (0.5) | Viscount (0.3) | Baron | Duke | "The Great" | Great | "The Ominous" | "The Dread" | The
+title_or_not: "" | :title + " " (0.5)
+start: :title_or_not + :colour_or_not + :ns1_or_not + :ns2_or_flower
