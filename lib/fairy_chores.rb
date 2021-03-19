@@ -96,10 +96,8 @@ module FairyChores
       20.times do
         n = gen.generate_from_name @andor_start_token
         unless circle_names.include?(n)
-          STDERR.puts "New generated name: #{n.inspect}"
           return n
         end
-        STDERR.puts "  (duplicate, re-generate: #{n.inspect})"
       end
       raise "After 20 tries, couldn't get a name that wasn't already used!"
     end
